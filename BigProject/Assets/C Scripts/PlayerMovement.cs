@@ -41,7 +41,6 @@ public class PlayerMovement : MonoBehaviour
     private bool iswallLeft, iswallRight;
     private bool isWallRunning;
     private bool activeGrapple;
-    private bool freeze;
     
     private State state;
 
@@ -79,7 +78,7 @@ public class PlayerMovement : MonoBehaviour
             case State.GrapplingState:
                 grappleToPosition();
                 handleWallRun();
-                //handleFirstPersonGrappleMovement();
+                handleFirstPersonGrappleMovement();
                 break; 
 
 
@@ -155,15 +154,17 @@ public class PlayerMovement : MonoBehaviour
 
     void handleFirstPersonGrappleMovement()
     {   
-        if(freeze) return;
+
 
         /*WORK ON THIS TO SIMULATE SWING BETTER*/
 
         float moveAD = Input.GetAxis("Horizontal");
 
+        setGravity(0);
+
         Vector3 playerVelocityGrapple = (transform.right * moveAD * speed * 3);       
 
-        playerVertVelocity += (gravity * 0.05f) * Time.deltaTime;
+        playerVertVelocity += gravity  * Time.deltaTime;
 
         playerVelocityGrapple.y = playerVertVelocity;
         
@@ -206,7 +207,7 @@ public class PlayerMovement : MonoBehaviour
     
     void wallRunStart()
     {
-        setGravity(-0.5f);
+        setGravity(0f);
        
         isWallRunning = true;
         canDoubleJump = true;
@@ -281,8 +282,6 @@ public class PlayerMovement : MonoBehaviour
         grappleReference.LookAt(grapplePoint);
         activeGrapple  = true;
         Vector3 grappleDirection = (grapplePoint - transform.position).normalized;
-        float moveAD = Input.GetAxis("Horizontal");
-        Vector3 playerVelocityGrapple = (transform.right * moveAD);
 
         float grappleMinSpeed = 7.0f;
         float grappleMaxSpeed = 14.0f;
@@ -295,7 +294,7 @@ public class PlayerMovement : MonoBehaviour
         
        
         
-        controller.Move((grappleDirection+playerVelocityGrapple) * grappleSpeed  * grappleSpeedVar * Time.deltaTime);
+        controller.Move(grappleDirection * grappleSpeed  * grappleSpeedVar * Time.deltaTime);
         
         if(Vector3.Distance(transform.position, grapplePoint) < 1.0f )
         {
@@ -311,11 +310,6 @@ public class PlayerMovement : MonoBehaviour
             playerMomentum += Vector3.up * grappleJumpHeight;
             stopGrapple();
         } 
-
-        if(Input.GetKeyDown(KeyCode.F))
-        {
-            stopGrapple();
-        }
 
     }
 
@@ -346,13 +340,11 @@ public class PlayerMovement : MonoBehaviour
             toggle = !toggle;
             if(toggle)
             {   
-                freeze = true;
                 TPCam.Priority = 1;
                 FPCam.Priority = 0;
             }
             else
             {
-                freeze = false;
                 TPCam.Priority = 0;
                 FPCam.Priority = 1;
 
